@@ -46,6 +46,7 @@
         var app = new Vue({
             el: '#app',
             data: {
+                timer: null,
                 result_state: null,
                 prediction: 0,
                 num1: 0,
@@ -70,7 +71,8 @@
             watch: {
                 prediction(newValue) {
                     if (newValue > 1) {
-                        setTimeout(() => {
+                        clearTimeout(this.timer)
+                        this.timer = setTimeout(() => {
                             this.check(newValue)
                         }, 400)
                     }
