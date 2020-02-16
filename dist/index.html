@@ -25,7 +25,7 @@
             <div class="form-group">
                 <div class="row pt-3">
                     <div class="col-5 text-center"><b>{{ num1 }}</b></div>
-                    <div class="col-2 text-center"><b>{{ '+' }}</b></div>
+                    <div class="col-2 text-center"><b>{{ operator }}</b></div>
                     <div class="col-5 text-center"><b>{{ num2 }}</b></div>
                 </div>
             </div>
@@ -34,10 +34,21 @@
                     class="form-control" v-model="prediction" ref="prediction" v-on:keyup.enter="check">
             </div>
             <div class="form-group text-center">
-                <div v-if="null !== result_state" :class="[result_state ? 'text-success' : 'text-danger']">
-                    {{ result_state ? 'верно' : 'неверно' }}
+                <div v-if="null !== current_state" :class="[current_state ? 'text-success' : 'text-danger']">
+                    {{ current_state ? 'верно' : 'неверно' }}
                 </div>
-            </div>    
+                <div v-else class="text-primary">
+                    введите ответ
+                </div>
+            </div>
+
+            <ul class="list-group">
+                <li class="list-group-item disabled text-center">Уровни</li>
+                <li  class="list-group-item d-flex justify-content-between align-items-center" v-for="l, i in levels">
+                    <div>#{{i+1}} - верные: {{l.stats.correct}} неверные: {{l.stats.incorrect}}</div>
+                    <span class="badge badge-primary badge-pill">{{ percent(l.stats) }}%</span>
+                </li>
+            </ul>
         </div>
 
     </div>
@@ -47,25 +58,19 @@
             el: '#app',
             data: {
                 timer: null,
-                result_state: null,
+                current_state: null,
                 prediction: 0,
+                operator: null,
                 num1: 0,
                 num2: 0,
-
-                user: {
-                    level: 0,
-                    stats: {
-                        correct: 0,
-                        incorrect: 0,
-                    },
-                },
+                level: 0,
 
                 levels: [
-                    {total: 20},
-                    {total: 40},
-                    {total: 60},
-                    {total: 80},
-                    {total: 100},
+                    {next: 20, operators: ['+'], stats: {correct: 0, incorrect: 0}},
+                    {next: 40, operators: ['+', '-'], stats: {correct: 0, incorrect: 0}},
+                    {next: 60, operators: ['+', '-', '*'], stats: {correct: 0, incorrect: 0}},
+                    {next: 80, operators: ['+', '-', '*'], stats: {correct: 0, incorrect: 0}},
+                    {next: 100, operators: ['+', '-', '*'], stats: {correct: 0, incorrect: 0}},
                 ],
             },
             watch: {
@@ -82,29 +87,46 @@
                 this.generate()
             },
             methods: {
-                generate() {
-                    this.num1 = Math.ceil(Math.random()*(10*(this.user.level+1)))
-                    this.num2 = Math.ceil(Math.random()*(10*(this.user.level+1)))
+                percent(stats) {
+                    if (stats.correct+stats.incorrect > 0) {
+                        return Math.ceil( stats.correct*100/(stats.correct+stats.incorrect) )
+                    }
+                    return 0
                 },
-                check(prediction) {
-                    real = this.num1 + this.num2
-                    if (real == prediction) {
-                        this.generate()
-                        this.$refs.prediction.focus()
-                        this.prediction = null
-                        this.result_state = 1
-                        this.user.stats.correct++
-                        if (this.user.stats.correct > this.user.stats.incorrect &&
-                            this.user.stats.correct > this.levels[this.user.level].total) {
-                            this.user.level++
+                generate() {
+                    operators = this.levels[this.level].operators
+                    this.operator = operators[Math.floor(Math.random() * operators.length)]
+
+                    if (this.operator == '-') {
+                        while(true) {
+                            this.num1 = Math.ceil(Math.random()*(10*(this.level+1)))
+                            this.num2 = Math.ceil(Math.random()*(10*(this.level+1)))
+                            if (this.num1 - this.num2 > 0) break
                         }
                     } else {
-                        this.user.stats.incorrect++
-                        this.result_state = 0
+                        this.num1 = Math.ceil(Math.random()*(10*(this.level+1)))
+                        this.num2 = Math.ceil(Math.random()*(10*(this.level+1)))
                     }
-                    setTimeout(() => {
-                        this.result_state = null
-                    }, 1000)
+                },
+                check(prediction) {
+                    real = eval(`${this.num1}${this.operator}${this.num2}`)
+                    stats = this.levels[this.level].stats
+                    this.$refs.prediction.focus()
+                    this.prediction = null
+
+                    if (real == prediction) {
+                        this.generate()
+                        this.current_state = 1
+                        stats.correct++
+                        if (stats.correct > stats.incorrect && stats.correct >= this.levels[this.level].next) {
+                            this.level++
+                        }
+                    } else {
+                        stats.incorrect++
+                        this.current_state = 0
+                    }
+
+                    setTimeout(() => {this.current_state = null}, this.current_state ? 1000 : 2000)
                 }
             }
         })
