@@ -37,9 +37,6 @@
                 <div v-if="null !== result_state" :class="[result_state ? 'text-success' : 'text-danger']">
                     {{ result_state ? 'верно' : 'неверно' }}
                 </div>
-                <div class="mt-3">
-                    <button @click="check" class="btn btn-primary btn-custom">ded anton</button>
-                </div>
             </div>    
         </div>
 
@@ -70,6 +67,13 @@
                     {total: 100},
                 ],
             },
+            watch: {
+                prediction(newValue) {
+                    if (newValue > 1) {
+                        this.check(newValue)
+                    }
+                }
+            },
             mounted() {
                 this.generate()
             },
@@ -78,9 +82,9 @@
                     this.num1 = Math.ceil(Math.random()*(10*(this.user.level+1)))
                     this.num2 = Math.ceil(Math.random()*(10*(this.user.level+1)))
                 },
-                check() {
+                check(prediction) {
                     real = this.num1 + this.num2
-                    if (real == this.prediction) {
+                    if (real == prediction) {
                         this.generate()
                         this.$refs.prediction.focus()
                         this.prediction = null
