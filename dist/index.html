@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css">
+    <!-- версия для разработки, отображает полезные предупреждения в консоли -->
+    <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+    <title>Math</title>
+    <style>
+        #app {
+            background: #efefef;
+            width: 100vw;
+            height: 100vh;
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <div style="width: 300px;" class="mx-auto">
+            <div class="form-group">
+                <div class="row">
+                    <div class="col-md-5 text-center"><b>{{ num1 }}</b></div>
+                    <div class="col-md-2 text-center"><b>{{ '+' }}</b></div>
+                    <div class="col-md-5 text-center"><b>{{ num2 }}</b></div>
+                </div>
+            </div>
+            <div class="form-group">
+                <input type="number" class="form-control" v-model="prediction" ref="prediction" v-on:keyup.enter="check">
+            </div>
+            <div class="form-group">
+                <div class="row">
+                    <div class="col-md-5">
+                        <button @click="check" class="btn btn-primary">ded anton</button>
+                    </div>
+                    <div class="col-md-7 text-right">
+                        <span v-if="null !== result_state" :class="[result_state ? 'text-success' : 'text-danger']">
+                            {{ result_state ? 'верно' : 'неверно' }}
+                        </span>
+                    </div>
+                </div>
+            </div>    
+        </div>
+
+    </div>
+
+    <script>
+        var app = new Vue({
+            el: '#app',
+            data: {
+                result_state: null,
+                prediction: 0,
+                num1: 0,
+                num2: 0,
+
+                user: {
+                    level: 0,
+                    stats: {
+                        correct: 0,
+                        incorrect: 0,
+                    },
+                },
+
+                levels: [
+                    {total: 20},
+                    {total: 40},
+                    {total: 60},
+                    {total: 80},
+                    {total: 100},
+                ],
+            },
+            mounted() {
+                this.generate()
+            },
+            methods: {
+                generate() {
+                    this.num1 = Math.ceil(Math.random()*(10*(this.user.level+1)))
+                    this.num2 = Math.ceil(Math.random()*(10*(this.user.level+1)))
+                },
+                check() {
+                    real = this.num1 + this.num2
+                    if (real == this.prediction) {
+                        this.generate()
+                        this.$refs.prediction.focus()
+                        this.prediction = null
+                        this.result_state = 1
+                        this.user.stats.correct++
+                        if (this.user.stats.correct > this.user.stats.incorrect &&
+                            this.user.stats.correct > this.levels[this.user.level].total) {
+                            this.user.level++
+                        }
+                    } else {
+                        this.user.stats.incorrect++
+                        this.result_state = 0
+                    }
+                    setTimeout(() => {
+                        this.result_state = null
+                    }, 1000)
+                }
+            }
+        })
+    </script>
+</body>
+</html>
