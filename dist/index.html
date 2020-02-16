@@ -70,7 +70,9 @@
             watch: {
                 prediction(newValue) {
                     if (newValue > 1) {
-                        this.check(newValue)
+                        setTimeout(() => {
+                            this.check(newValue)
+                        }, 400)
                     }
                 }
             },
