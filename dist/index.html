@@ -75,7 +75,7 @@
             },
             watch: {
                 prediction(newValue) {
-                    if (newValue > 1) {
+                    if (newValue > 0) {
                         clearTimeout(this.timer)
                         this.timer = setTimeout(() => {
                             this.check(newValue)
