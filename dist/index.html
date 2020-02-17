@@ -20,6 +20,12 @@
         .input-prediction {
             font-size: 30px;
         }
+        body {
+            transition: .4s;
+        }
+        .night {
+            filter: invert(1);
+        }
     </style>
 </head>
 <body>
@@ -48,10 +54,12 @@
             <ul class="list-group">
                 <li class="list-group-item disabled text-center">Уровни</li>
                 <li  class="list-group-item d-flex justify-content-between align-items-center" v-for="l, i in levels">
-                    <div>#{{i+1}} - верные: {{l.stats.correct}} неверные: {{l.stats.incorrect}}</div>
+                    <div>#{{i+1}} - верные: <b>{{l.stats.correct}}</b> неверные: <b>{{l.stats.incorrect}}</b></div>
                     <span class="badge badge-primary badge-pill">{{ percent(l.stats) }}%</span>
                 </li>
             </ul>
+
+            <a href="#" @click.stop.prevent="night = !night" class="btn btn-primary mt-3">{{ night ? 'день' : 'ночь' }}</a>
         </div>
 
     </div>
@@ -60,6 +68,7 @@
         var app = new Vue({
             el: '#app',
             data: {
+                night: false,
                 timer: null,
                 level_steps: 20,
                 current_state: null,
@@ -85,6 +94,12 @@
                             this.check(newValue)
                         }, 400)
                     }
+                },
+                night(newValue) {
+                    let el = document.body
+                    newValue
+                        ? el.classList.add('night')
+                        : el.classList.remove('night')
                 }
             },
             mounted() {
